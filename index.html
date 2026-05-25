@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pocketfolks - 2D Vector Customizer</title>
+    <title>Pocketfolks - Illustrative Customizer</title>
     <style>
         :root {
-            --bg-warm: #FAF8F5;
+            --bg-cozy: #FAF8F5;
             --ui-sage: #F1F5EE;
             --ui-dark: #333C31;
             --ui-sage-dark: #6B7C65;
-            --panel-shadow: 0 12px 40px rgba(51, 60, 49, 0.06);
+            --sunlight: rgba(255, 190, 90, 0.25);
         }
 
         * {
@@ -23,7 +23,7 @@
         }
 
         body {
-            background-color: var(--bg-warm);
+            background-color: var(--bg-cozy);
             overflow: hidden;
             width: 100vw;
             height: 100vh;
@@ -41,54 +41,84 @@
         }
 
         #hud-header h1 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 600;
             letter-spacing: -0.5px;
             margin-bottom: 2px;
         }
 
         #hud-header p {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--ui-sage-dark);
-            font-weight: 500;
         }
 
-        /* SVG Character Viewport */
-        #character-canvas {
+        /* The Illustration Canvas Window */
+        #canvas-wrapper {
+            position: relative;
             width: 100%;
             height: 100%;
-            max-width: 600px;
+            max-width: 500px;
             max-height: 600px;
-            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* Interactive Vector Path Rules */
-        .interactive-part {
+        #character-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Painterly Styling Rules (Lineless Art Setup) */
+        .vector-part {
             cursor: pointer;
-            transition: filter 0.2s ease, opacity 0.2s ease;
+            transition: filter 0.2s ease;
         }
 
-        .interactive-part:hover {
-            filter: brightness(1.03);
-            opacity: 0.95;
+        /* Soft, blended ambient shadows instead of harsh black outlines */
+        .shadow-blend {
+            filter: drop-shadow(0px 8px 12px rgba(74, 55, 40, 0.25));
+        }
+
+        /* Cinematic Overlays applied via CSS Graphics */
+        .sunlight-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--sunlight) 0%, rgba(255,255,255,0) 70%);
+            pointer-events: none;
+            mix-blend-mode: color-burn; /* Bakes the golden sun directly into the colors */
+        }
+
+        .grain-texture {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.04;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3联%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
 
         /* Contextual Floating Menus */
         .context-menu {
             position: absolute;
             z-index: 10;
-            background: rgba(241, 245, 238, 0.92);
+            background: rgba(241, 245, 238, 0.94);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(107, 124, 101, 0.15);
-            padding: 22px;
+            padding: 20px;
             border-radius: 24px;
-            width: 260px;
-            box-shadow: var(--panel-shadow);
+            width: 250px;
             opacity: 0;
             transform: scale(0.92) translateY(10px);
             pointer-events: none;
-            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 15px 35px rgba(51, 60, 49, 0.08);
         }
 
         .context-menu.active {
@@ -98,83 +128,35 @@
         }
 
         .menu-title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--ui-sage-dark);
             font-weight: 700;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             border-bottom: 1px solid rgba(107, 124, 101, 0.1);
-            padding-bottom: 6px;
+            padding-bottom: 4px;
         }
 
-        .feature-row {
-            margin-bottom: 16px;
-        }
-
-        .feature-row label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
+        .feature-row { margin-bottom: 14px; }
+        .feature-row label { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; }
+        
         .slider {
-            width: 100%;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 4px;
-            border-radius: 2px;
-            background: rgba(107, 124, 101, 0.18);
-            outline: none;
+            width: 100%; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px;
+            background: rgba(107, 124, 101, 0.18); outline: none;
         }
-
         .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--ui-sage-dark);
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            -webkit-appearance: none; appearance: none; width: 14px; height: 14px; border-radius: 50%;
+            background: var(--ui-sage-dark); cursor: pointer;
         }
 
-        /* Swatches matching your design preferences */
-        .color-palette-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 8px;
-        }
-
-        .color-dot {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 2px 6px rgba(51,60,49,0.12);
-            cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .color-dot:hover {
-            transform: scale(1.18);
-        }
+        .color-palette { display: flex; gap: 8px; margin-top: 6px; }
+        .color-dot { width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
 
         #guide-overlay {
-            position: absolute;
-            bottom: 40px;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.85);
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            pointer-events: none;
-            color: var(--ui-sage-dark);
-            border: 1px solid rgba(107, 124, 101, 0.12);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            position: absolute; bottom: 40px; z-index: 10; background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px; border-radius: 30px; font-size: 0.8rem; font-weight: 500;
+            pointer-events: none; color: var(--ui-sage-dark); border: 1px solid rgba(107, 124, 101, 0.1);
         }
     </style>
 </head>
@@ -182,173 +164,132 @@
 
     <div id="hud-header">
         <h1>Pocketfolks</h1>
-        <p>Illustrative Vector Engine</p>
+        <p>Painterly Customization Prototype</p>
     </div>
 
-    <svg id="character-canvas" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-        <g id="character-group" transform="translate(0, 10)">
+    <div id="canvas-wrapper">
+        <svg id="character-svg" viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+            <path id="part-torso" class="vector-part shadow-blend" data-part="torso" fill="#EAAA95" 
+                d="M 120 480 C 120 380, 140 330, 165 310 L 165 250 L 235 250 L 235 310 C 260 330, 280 380, 280 480 Z"/>
             
-            <path id="part-hair-back" class="interactive-part" data-part="hair" fill="#4A3728" 
-                d="M 140 170 C 110 130, 120 70, 200 70 C 280 70, 290 130, 260 170 Z"/>
+            <path id="part-head" class="vector-part shadow-blend" data-part="head" fill="#8A5A36" 
+                d="M 170 250 L 170 210 C 145 200, 140 140, 160 110 C 180 80, 220 80, 240 110 C 260 140, 255 200, 230 210 L 230 250 Z"/>
+            
+            <path id="part-hair" class="vector-part" data-part="hair" fill="#1C1612" 
+                d="M 150 130 C 130 90, 160 50, 200 50 C 240 50, 270 90, 250 130 C 235 110, 220 105, 200 110 C 180 105, 165 110, 150 130 Z"/>
+        </svg>
 
-            <path id="part-clothing" class="interactive-part" data-part="clothing" fill="#F1F5EE" 
-                d="M 130 350 C 130 290, 150 250, 170 240 L 170 210 L 230 210 L 230 240 C 250 250, 270 290, 270 350 Z"/>
+        <div class="sunlight-overlay"></div>
+        <div class="grain-texture"></div>
+    </div>
 
-            <path id="part-skin" class="interactive-part" data-part="face" fill="#E2B997" 
-                d="M 175 220 L 175 195 C 150 190, 145 140, 155 120 C 165 95, 235 95, 245 120 C 255 140, 250 190, 225 195 L 225 220 Z"/>
+    <div id="guide-overlay">✦ Click on the Hair, Head/Neck, or Torso to reshape the art</div>
 
-            <g id="face-features" pointer-events="none">
-                <ellipse id="eye-left" cx="180" cy="145" rx="4" ry="6" fill="#333C31" />
-                <ellipse id="eye-right" cx="220" cy="145" rx="4" ry="6" fill="#333C31" />
-                
-                <circle cx="168" cy="156" r="7" fill="#EAAAA0" opacity="0.35"/>
-                <circle cx="232" cy="156" r="7" fill="#EAAAA0" opacity="0.35"/>
-            </g>
-
-            <path id="part-hair-front" class="interactive-part" data-part="hair" fill="#4A3728" 
-                d="M 145 120 C 140 90, 170 65, 200 65 C 230 65, 260 90, 255 120 C 240 100, 220 105, 200 115 C 180 105, 160 100, 145 120 Z"/>
-
-        </g>
-    </svg>
-
-    <div id="guide-overlay">✦ Click on Hair, Face, or Clothes to open floating menus</div>
-
-    <div id="menu-face" class="context-menu">
-        <div class="menu-title">Face Profile</div>
+    <div id="menu-head" class="context-menu">
+        <div class="menu-title">Head & Neck</div>
         <div class="feature-row">
-            <label>Eye Spacing <span id="txt-eye-space">0px</span></label>
-            <input type="range" id="morph-eye-space" class="slider" min="-12" max="15" step="1" value="0">
+            <label>Neck Elegance <span id="txt-neck-width">0%</span></label>
+            <input type="range" id="slider-neck-width" class="slider" min="-15" max="15" step="1" value="0">
         </div>
         <div class="feature-row">
             <label>Skin Tone</label>
-            <div class="color-palette-row">
-                <div class="color-dot" style="background: #E2B997;" onclick="changeColor('skin', '#E2B997')"></div>
-                <div class="color-dot" style="background: #F3D2B9;" onclick="changeColor('skin', '#F3D2B9')"></div>
-                <div class="color-dot" style="background: #C6936E;" onclick="changeColor('skin', '#C6936E')"></div>
+            <div class="color-palette">
+                <div class="color-dot" style="background: #8A5A36;" onclick="changeColor('skin', '#8A5A36')"></div>
+                <div class="color-dot" style="background: #A36A43;" onclick="changeColor('skin', '#A36A43')"></div>
+                <div class="color-dot" style="background: #C68B5C;" onclick="changeColor('skin', '#C68B5C')"></div>
             </div>
         </div>
     </div>
 
     <div id="menu-hair" class="context-menu">
-        <div class="menu-title">Hair Volume</div>
+        <div class="menu-title">Hair Crown</div>
         <div class="feature-row">
-            <label>Hair Puff <span id="txt-hair-scale">1.0x</span></label>
-            <input type="range" id="morph-hair-scale" class="slider" min="0.85" max="1.25" step="0.01" value="1">
-        </div>
-        <div class="feature-row">
-            <label>Hair Tones</label>
-            <div class="color-palette-row">
-                <div class="color-dot" style="background: #4A3728;" onclick="changeColor('hair', '#4A3728')"></div>
-                <div class="color-dot" style="background: #C49A6C;" onclick="changeColor('hair', '#C49A6C')"></div>
-                <div class="color-dot" style="background: #222222;" onclick="changeColor('hair', '#222222')"></div>
-            </div>
+            <label>Hair Puff <span id="txt-hair-puff">1.0x</span></label>
+            <input type="range" id="slider-hair-puff" class="slider" min="0.85" max="1.3" step="0.01" value="1">
         </div>
     </div>
 
-    <div id="menu-clothing" class="context-menu">
-        <div class="menu-title">Clothing Style</div>
+    <div id="menu-torso" class="context-menu">
+        <div class="menu-title">Shoulder Frame</div>
         <div class="feature-row">
-            <label>Shoulder Width <span id="txt-shoulder-width">0px</span></label>
-            <input type="range" id="morph-shoulder" class="slider" min="-25" max="35" step="1" value="0">
+            <label>Shoulder Slop <span id="txt-shoulder">0%</span></label>
+            <input type="range" id="slider-shoulder" class="slider" min="-20" max="25" step="1" value="0">
         </div>
         <div class="feature-row">
-            <label>Top Swatch</label>
-            <div class="color-palette-row">
+            <label>Clothing Tone</label>
+            <div class="color-palette">
+                <div class="color-dot" style="background: #EAAA95;" onclick="changeColor('clothing', '#EAAA95')"></div>
                 <div class="color-dot" style="background: #F1F5EE;" onclick="changeColor('clothing', '#F1F5EE')"></div>
-                <div class="color-dot" style="background: #9BB0A5;" onclick="changeColor('clothing', '#9BB0A5')"></div>
-                <div class="color-dot" style="background: #D4C5B9;" onclick="changeColor('clothing', '#D4C5B9')"></div>
+                <div class="color-dot" style="background: #6B7C65;" onclick="changeColor('clothing', '#6B7C65')"></div>
             </div>
         </div>
     </div>
 
     <script>
-        let activeMenu = null;
+        let currentMenu = null;
 
-        // Save default vector map coordinates for real-time morph shifting calculations
-        const baseEyeLeftX = 180;
-        const baseEyeRightX = 220;
-
-        document.querySelectorAll('.interactive-part').forEach(part => {
+        // Interactive click detection links straight to individual shape configurations
+        document.querySelectorAll('.vector-part').forEach(part => {
             part.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const partType = part.getAttribute('data-part');
-                showFloatingMenu(partType, e.clientX, e.clientY);
+                showMenu(partType, e.clientX, e.clientY);
             });
         });
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.context-menu')) {
-                hideActiveMenu();
-            }
-        });
+        document.addEventListener('click', () => hideMenu());
 
-        function showFloatingMenu(type, x, y) {
-            hideActiveMenu();
+        function showMenu(type, x, y) {
+            hideMenu();
             const menu = document.getElementById(`menu-${type}`);
             if (!menu) return;
-
-            menu.style.left = `${Math.min(x + 20, window.innerWidth - 280)}px`;
-            menu.style.top = `${Math.min(y - 40, window.innerHeight - 240)}px`;
+            menu.style.left = `${Math.min(x + 20, window.innerWidth - 270)}px`;
+            menu.style.top = `${Math.min(y - 40, window.innerHeight - 220)}px`;
             menu.classList.add('active');
-            activeMenu = menu;
+            currentMenu = menu;
         }
 
-        function hideActiveMenu() {
-            if (activeMenu) {
-                activeMenu.classList.remove('active');
-                activeMenu = null;
-            }
-        }
+        function hideMenu() { if (currentMenu) { currentMenu.classList.remove('active'); currentMenu = null; } }
 
-        // --- Real-time Organic Mathematical Deformations ---
-        
-        // 1. Reshape Eye Spacing
-        document.getElementById('morph-eye-space').addEventListener('input', (e) => {
+        // Real-Time Vector Node Reshaping Actions
+        document.getElementById('slider-neck-width').addEventListener('input', (e) => {
             const val = parseInt(e.target.value);
-            document.getElementById('txt-eye-space').innerText = val + 'px';
+            document.getElementById('txt-neck-width').innerText = val + '%';
             
-            document.getElementById('eye-left').setAttribute('cx', baseEyeLeftX - val);
-            document.getElementById('eye-right').setAttribute('cx', baseEyeRightX + val);
+            const headPath = document.getElementById('part-head');
+            const leftNeckX = 170 + val;
+            const rightNeckX = 230 - val;
+            
+            // Recalculates the custom curved path anchor string smoothly
+            const newPath = `M ${leftNeckX} 250 L ${leftNeckX} 210 C 145 200, 140 140, 160 110 C 180 80, 220 80, 240 110 C 260 140, 255 200, ${rightNeckX} 210 L ${rightNeckX} 250 Z`;
+            headPath.setAttribute('d', newPath);
         });
 
-        // 2. Reshape Shoulder / Chest Width Profile
-        document.getElementById('morph-shoulder').addEventListener('input', (e) => {
+        document.getElementById('slider-shoulder').addEventListener('input', (e) => {
             const val = parseInt(e.target.value);
-            document.getElementById('txt-shoulder-width').innerText = val + 'px';
+            document.getElementById('txt-shoulder').innerText = val + '%';
             
-            const clothingPath = document.getElementById('part-clothing');
-            // Dynamically alter the exact path coordinate nodes of the custom shirt vector path string
-            const leftTargetX = 130 - val;
-            const rightTargetX = 270 + val;
-            const newPath = `M ${leftTargetX} 350 C ${leftTargetX} 290, 150 250, 170 210 L 230 210 C 250 250, ${rightTargetX} 290, ${rightTargetX} 350 Z`;
-            clothingPath.setAttribute('d', newPath);
+            const torsoPath = document.getElementById('part-torso');
+            const leftShoulderX = 120 - val;
+            const leftShoulderY = 310 + val;
+            const rightShoulderX = 280 + val;
+            const rightShoulderY = 310 + val;
+            
+            const newPath = `M 120 480 C 120 380, ${leftShoulderX} ${leftShoulderY}, 165 310 L 165 250 L 235 250 L 235 310 C ${rightShoulderX} ${rightShoulderY}, 280 380, 280 480 Z`;
+            torsoPath.setAttribute('d', newPath);
         });
 
-        // 3. Reshape Hair Puff / Scaling volume instantly
-        document.getElementById('morph-hair-scale').addEventListener('input', (e) => {
+        document.getElementById('slider-hair-puff').addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
-            document.getElementById('txt-hair-scale').innerText = val.toFixed(2) + 'x';
-            
-            const backHair = document.getElementById('part-hair-back');
-            const frontHair = document.getElementById('part-hair-front');
-            
-            // Scaled smoothly from the top center core of the skull array matrix
-            backHair.style.transformOrigin = "200px 120px";
-            frontHair.style.transformOrigin = "200px 120px";
-            backHair.style.transform = `scale(${val})`;
-            frontHair.style.transform = `scale(${val})`;
+            document.getElementById('txt-hair-puff').innerText = val.toFixed(1) + 'x';
+            const hair = document.getElementById('part-hair');
+            hair.style.transformOrigin = "200px 90px";
+            hair.style.transform = `scale(${val})`;
         });
 
-        // Color Palette Node Updates
         window.changeColor = function(part, hex) {
-            if (part === 'skin') {
-                document.getElementById('part-skin').setAttribute('fill', hex);
-            } else if (part === 'hair') {
-                document.getElementById('part-hair-back').setAttribute('fill', hex);
-                document.getElementById('part-hair-front').setAttribute('fill', hex);
-            } else if (part === 'clothing') {
-                document.getElementById('part-clothing').setAttribute('fill', hex);
-            }
+            if(part === 'skin') document.getElementById('part-head').setAttribute('fill', hex);
+            if(part === 'clothing') document.getElementById('part-torso').setAttribute('fill', hex);
         }
     </script>
 </body>
