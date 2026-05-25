@@ -3,242 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pocketfolks Character Creator</title>
+    <title>Pocketfolks - Character Creator</title>
     
     <style>
         :root {
-            --bg-warm-beige: #FAF8F5;
-            --ui-sage-green: #F1F5EE;
+            --bg-warm: #FAF8F5;
+            --ui-sage: #F1F5EE;
+            --ui-dark: #333C31;
             --ui-sage-dark: #6B7C65;
-            --text-dark: #333C31;
-            --accent-wood: #B45309;
+            --panel-shadow: 0 10px 30px rgba(51, 60, 49, 0.08);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             -webkit-user-select: none;
             user-select: none;
         }
 
         body {
-            background-color: var(--bg-warm-beige);
+            background-color: var(--bg-warm);
             overflow: hidden;
-            display: flex;
             width: 100vw;
             height: 100vh;
-            color: var(--text-dark);
+            color: var(--ui-dark);
         }
 
-        /* 3D Viewport Window */
         #canvas-container {
-            flex: 1;
+            width: 100%;
             height: 100%;
-            position: relative;
-            background: radial-gradient(circle at center, #ffffff 0%, #FAF8F5 100%);
-        }
-
-        /* Loading Overlay Overlay */
-        #loading-screen {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-warm-beige);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            z-index: 1;
+        }
+
+        /* Top HUD Title Bar */
+        #hud-header {
+            position: absolute;
+            top: 30px;
+            left: 40px;
             z-index: 10;
-            transition: opacity 0.5s ease;
+            pointer-events: none;
         }
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(107, 124, 101, 0.2);
-            border-top: 4px solid var(--ui-sage-dark);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Premium Creator Sidebar */
-        #sidebar {
-            width: 380px;
-            height: 100%;
-            background-color: rgba(241, 245, 238, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-left: 1px solid rgba(107, 124, 101, 0.15);
-            display: flex;
-            flex-direction: column;
-            z-index: 5;
-            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.02);
-        }
-
-        .sidebar-header {
-            padding: 30px 25px 20px 25px;
-            border-bottom: 1px solid rgba(107, 124, 101, 0.1);
-        }
-
-        .sidebar-header h1 {
-            font-size: 1.5rem;
+        #hud-header h1 {
+            font-size: 1.8rem;
             font-weight: 600;
             letter-spacing: -0.5px;
-            color: var(--text-dark);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
-        .sidebar-header p {
+        #hud-header p {
             font-size: 0.85rem;
             color: var(--ui-sage-dark);
-            opacity: 0.8;
-        }
-
-        .menu-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 25px;
-        }
-
-        .control-group {
-            margin-bottom: 30px;
-        }
-
-        .control-group h3 {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-            color: var(--ui-sage-dark);
-            font-weight: 700;
-        }
-
-        /* Sliders Layout */
-        .slider-wrapper {
-            margin-bottom: 18px;
-        }
-
-        .slider-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            margin-bottom: 6px;
             font-weight: 500;
         }
 
-        .slider-input {
+        /* Contextual Floating Pop-out Panels (Paralives Style) */
+        .context-menu {
+            position: absolute;
+            z-index: 10;
+            background: rgba(241, 245, 238, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(107, 124, 101, 0.15);
+            padding: 20px;
+            border-radius: 20px;
+            width: 260px;
+            box-shadow: var(--panel-shadow);
+            opacity: 0;
+            transform: scale(0.9) translateY(10px);
+            pointer-events: none;
+            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .context-menu.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+
+        .menu-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ui-sage-dark);
+            font-weight: 700;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(107, 124, 101, 0.1);
+            padding-bottom: 6px;
+        }
+
+        /* Sliders and Feature Pickers */
+        .feature-row {
+            margin-bottom: 14px;
+        }
+
+        .feature-row label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .slider {
             width: 100%;
             -webkit-appearance: none;
             appearance: none;
-            height: 6px;
-            border-radius: 3px;
+            height: 4px;
+            border-radius: 2px;
             background: rgba(107, 124, 101, 0.2);
             outline: none;
         }
 
-        .slider-input::-webkit-slider-thumb {
+        .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background: var(--ui-sage-dark);
             cursor: pointer;
-            transition: transform 0.1s ease;
         }
 
-        .slider-input::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        /* Custom Color Pickers */
-        .color-row {
+        /* Color Circle Button Layout */
+        .color-palette-row {
             display: flex;
-            gap: 12px;
-            align-items: center;
-            background: white;
-            padding: 10px 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(107, 124, 101, 0.1);
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-top: 10px;
         }
 
-        .color-row span {
-            font-size: 0.85rem;
-            flex: 1;
-            font-weight: 500;
-        }
-
-        .color-picker-custom {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            width: 34px;
-            height: 34px;
-            background-none: none;
-            border: none;
-            cursor: pointer;
-        }
-
-        .color-picker-custom::-webkit-color-swatch {
+        .color-dot {
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             border: 2px solid white;
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
-        }
-
-        /* Action Buttons */
-        .footer-actions {
-            padding: 20px 25px;
-            border-top: 1px solid rgba(107, 124, 101, 0.1);
-            background: rgba(255, 255, 255, 0.5);
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
+            transition: transform 0.15s ease;
         }
 
-        .btn-primary {
-            background-color: var(--ui-sage-dark);
-            color: white;
+        .color-dot:hover {
+            transform: scale(1.15);
         }
 
-        .btn-primary:hover {
-            background-color: #556350;
-            transform: translateY(-1px);
-        }
-
-        /* Quick instructions for mouse controls */
-        .controls-hint {
+        /* Ambient Instruction Guide */
+        #guide-overlay {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.7);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(0,0,0,0.05);
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(51, 60, 49, 0.05);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
             pointer-events: none;
+            color: var(--ui-sage-dark);
+            border: 1px solid rgba(107, 124, 101, 0.1);
         }
     </style>
 
@@ -247,256 +174,320 @@
 </head>
 <body>
 
-    <div id="canvas-container">
-        <div id="loading-screen">
-            <div class="spinner"></div>
-            <p style="font-size: 0.9rem; font-weight: 500; color: #6B7C65;">Preparing the workspace...</p>
-        </div>
-        <div class="controls-hint"> Left Click + Drag to rotate camera | Right Click to pan</div>
+    <div id="hud-header">
+        <h1>Pocketfolks</h1>
+        <p>Interactive Reshaping Engine</p>
     </div>
 
-    <div id="sidebar">
-        <div class="sidebar-header">
-            <h1>Pocketfolks</h1>
-            <p>Character Customization Prototype</p>
+    <div id="canvas-container"></div>
+
+    <div id="guide-overlay">✦ Click directly on the Hair, Face, or Neck to open reshaping controls</div>
+
+    <div id="menu-face" class="context-menu">
+        <div class="menu-title">Face Matrix</div>
+        <div class="feature-row">
+            <label>Face Width <span id="txt-face-width">0%</span></label>
+            <input type="range" id="morph-face-width" class="slider" min="-0.3" max="0.3" step="0.01" value="0">
         </div>
-
-        <div class="menu-content">
-            <div class="control-group">
-                <h3>Proportions</h3>
-                
-                <div class="slider-wrapper">
-                    <div class="slider-label"><span>Height</span><span id="val-height">1.00x</span></div>
-                    <input type="range" id="scale-height" class="slider-input" min="0.8" max="1.2" step="0.01" value="1">
-                </div>
-
-                <div class="slider-wrapper">
-                    <div class="slider-label"><span>Body Width</span><span id="val-width">1.00x</span></div>
-                    <input type="range" id="scale-width" class="slider-input" min="0.7" max="1.3" step="0.01" value="1">
-                </div>
-
-                <div class="slider-wrapper">
-                    <div class="slider-label"><span>Head Size</span><span id="val-head">1.00x</span></div>
-                    <input type="range" id="scale-head-size" class="slider-input" min="0.8" max="1.2" step="0.01" value="1">
-                </div>
-            </div>
-
-            <div class="control-group">
-                <h3>Color Palette</h3>
-                
-                <div class="color-row">
-                    <span>Skin Tone</span>
-                    <input type="color" id="color-skin" class="color-picker-custom" value="#E2B997">
-                </div>
-
-                <div class="color-row">
-                    <span>Hair Color</span>
-                    <input type="color" id="color-hair" class="color-picker-custom" value="#4A3728">
-                </div>
-
-                <div class="color-row">
-                    <span>Top Clothing</span>
-                    <input type="color" id="color-top" class="color-picker-custom" value="#FAF8F5">
-                </div>
-
-                <div class="color-row">
-                    <span>Bottom Clothing</span>
-                    <input type="color" id="color-bottom" class="color-picker-custom" value="#F1F5EE">
-                </div>
+        <div class="feature-row">
+            <label>Chin Depth <span id="txt-chin-depth">0%</span></label>
+            <input type="range" id="morph-chin-depth" class="slider" min="-0.2" max="0.3" step="0.01" value="0">
+        </div>
+        <div class="feature-row">
+            <label>Skin Tone</label>
+            <div class="color-palette-row">
+                <div class="color-dot" style="background: #E2B997;" onclick="changeColor('face', '#E2B997')"></div>
+                <div class="color-dot" style="background: #F3D2B9;" onclick="changeColor('face', '#F3D2B9')"></div>
+                <div class="color-dot" style="background: #C6936E;" onclick="changeColor('face', '#C6936E')"></div>
+                <div class="color-dot" style="background: #8A5A36;" onclick="changeColor('face', '#8A5A36')"></div>
             </div>
         </div>
+    </div>
 
-        <div class="footer-actions">
-            <button class="btn btn-primary" onclick="alert('Pocketfolk DNA saved successfully!')">Save Character</button>
+    <div id="menu-hair" class="context-menu">
+        <div class="menu-title">Hair Volume</div>
+        <div class="feature-row">
+            <label>Hair Puff <span id="txt-hair-puff">0%</span></label>
+            <input type="range" id="morph-hair-puff" class="slider" min="-0.1" max="0.4" step="0.01" value="0">
+        </div>
+        <div class="feature-row">
+            <label>Hair Height <span id="txt-hair-height">0%</span></label>
+            <input type="range" id="morph-hair-height" class="slider" min="-0.1" max="0.3" step="0.01" value="0">
+        </div>
+        <div class="feature-row">
+            <label>Hair Swatch</label>
+            <div class="color-palette-row">
+                <div class="color-dot" style="background: #4A3728;" onclick="changeColor('hair', '#4A3728')"></div>
+                <div class="color-dot" style="background: #222222;" onclick="changeColor('hair', '#222222')"></div>
+                <div class="color-dot" style="background: #C49A6C;" onclick="changeColor('hair', '#C49A6C')"></div>
+                <div class="color-dot" style="background: #9E4F3F;" onclick="changeColor('hair', '#9E4F3F')"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="menu-neck" class="context-menu">
+        <div class="menu-title">Proportions</div>
+        <div class="feature-row">
+            <label>Neck Thickness <span id="txt-neck-thick">0%</span></label>
+            <input type="range" id="morph-neck-thick" class="slider" min="-0.05" max="0.1" step="0.01" value="0">
+        </div>
+        <div class="feature-row">
+            <label>Neck Height <span id="txt-neck-height">0%</span></label>
+            <input type="range" id="morph-neck-height" class="slider" min="-0.1" max="0.2" step="0.01" value="0">
         </div>
     </div>
 
     <script>
-        let scene, camera, renderer, controls;
-        let pocketfolkGroup, headMesh, bodyMesh, leftArm, rightArm, hairMesh, topMesh, bottomMesh;
+        let scene, camera, renderer, controls, raycaster, mouse;
+        let faceMesh, hairMesh, neckMesh;
+        let activeMenu = null;
 
-        // Initialize Engine
+        // Arrays to preserve original vertex structures for dynamic morphing
+        let baseFaceVertices = [], baseHairVertices = [], baseNeckVertices = [];
+
         function init() {
             const container = document.getElementById('canvas-container');
 
-            // 1. Build Base Scene
             scene = new THREE.Scene();
             scene.background = new THREE.Color('#FAF8F5');
 
-            // 2. Camera Configuration
-            camera = new THREE.PerspectiveCamera(35, container.clientWidth / container.clientHeight, 0.1, 100);
-            camera.position.set(0, 1.2, 3.5);
+            camera = new THREE.PerspectiveCamera(30, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(0, 0.4, 3);
 
-            // 3. Setup Renderer with Soft Shadows Enabled
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
 
-            // 4. Smooth Camera Controls Configuration
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
-            controls.maxPolarAngle = Math.PI / 2 + 0.1; // Block camera from going underground
-            controls.minDistance = 1.5;
-            controls.maxDistance = 6;
-            controls.target.set(0, 1.0, 0);
+            controls.target.set(0, 0.35, 0);
+            controls.enablePan = false;
 
-            // 5. Ambient Lighting Setups (Soft Matte Look Architecture)
-            const ambientLight = new THREE.AmbientLight('#ffffff', 0.65);
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // Set up sophisticated, ambient lighting (Soft PBR style)
+            const ambientLight = new THREE.AmbientLight('#ffffff', 0.7);
             scene.add(ambientLight);
 
-            // Main Soft Sun Rig
-            const sunLight = new THREE.DirectionalLight('#FFF9E6', 0.8);
-            sunLight.position.set(5, 8, 5);
-            sunLight.castShadow = true;
-            sunLight.shadow.mapSize.width = 2048;
-            sunLight.shadow.mapSize.height = 2048;
-            sunLight.shadow.bias = -0.0001;
-            scene.add(sunLight);
+            const studioLight = new THREE.DirectionalLight('#FFF5EB', 0.65);
+            studioLight.position.set(4, 6, 4);
+            scene.add(studioLight);
 
-            // Soft Ground Bounce Light Fill
-            const fillLight = new THREE.DirectionalLight('#E2E8F0', 0.3);
-            fillLight.position.set(-5, 2, -5);
-            scene.add(fillLight);
+            const softFill = new THREE.DirectionalLight('#E2E8F0', 0.35);
+            softFill.position.set(-4, 2, -4);
+            scene.add(softFill);
 
-            // Subtle Floor/Studio Platform
-            const floorGeo = new THREE.PlaneGeometry(10, 10);
-            const floorMat = new THREE.ShadowMaterial({ opacity: 0.06 });
-            const floor = new THREE.Mesh(floorGeo, floorMat);
-            floor.rotation.x = -Math.PI / 2;
-            floor.receiveShadow = true;
-            scene.add(floor);
+            // Build human-like mesh structures
+            buildPocketfolkModels();
 
-            // 6. Assemble Procedural Character Geometry Blueprint
-            createCharacter();
+            // Event Hooks
+            container.addEventListener('pointerdown', onModelClick);
+            window.addEventListener('resize', onWindowResize);
+            setupMorphControls();
 
-            // Dismantle loading screen safely
-            document.getElementById('loading-screen').style.opacity = '0';
-            setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
-
-            // Hook up UI listeners
-            setupUIListeners();
-
-            // Run core frame engine loop
             animate();
         }
 
-        function createCharacter() {
-            pocketfolkGroup = new THREE.Group();
-            scene.add(pocketfolkGroup);
+        function buildPocketfolkModels() {
+            // Setup true matte materials matching your palette preference
+            const skinMaterial = new THREE.MeshLambertMaterial({ color: 0xE2B997, roughness: 0.9 });
+            const hairMaterial = new THREE.MeshLambertMaterial({ color: 0x4A3728, roughness: 0.85 });
 
-            // Setup Soft Matte Materials
-            const materials = {
-                skin: new THREE.MeshLambertMaterial({ color: 0xE2B997 }),
-                hair: new THREE.MeshLambertMaterial({ color: 0x4A3728 }),
-                top: new THREE.MeshLambertMaterial({ color: 0xFAF8F5 }),
-                bottom: new THREE.MeshLambertMaterial({ color: 0xF1F5EE })
-            };
+            // 1. Procedural Human-Style Head Mesh (Softer than basic shapes)
+            const faceGeo = new THREE.SphereGeometry(0.24, 32, 24);
+            // Sculpt the sphere into an organic jaw/face shape instantly via code
+            const posAttr = faceGeo.attributes.position;
+            for (let i = 0; i < posAttr.count; i++) {
+                let x = posAttr.getX(i);
+                let y = posAttr.getY(i);
+                let z = posAttr.getZ(i);
+                
+                // Taper the chin slightly downward/forward
+                if (y < 0) {
+                    x *= (1 + y * 0.3);
+                    z *= (1 + y * 0.1);
+                }
+                posAttr.setXYZ(i, x, y, z);
+                baseFaceVertices.push(new THREE.Vector3(x, y, z));
+            }
+            faceGeo.computeVertexNormals();
+            faceMesh = new THREE.Mesh(faceGeo, skinMaterial);
+            faceMesh.position.y = 0.4;
+            faceMesh.name = "face";
+            scene.add(faceMesh);
 
-            // Main Torso Body Component
-            const bodyGeo = new THREE.CylinderGeometry(0.2, 0.15, 0.6, 16);
-            bodyMesh = new THREE.Mesh(bodyGeo, materials.skin);
-            bodyMesh.position.y = 0.65;
-            bodyMesh.castShadow = true;
-            pocketfolkGroup.add(bodyMesh);
+            // 2. Volumetric Soft Hair Layer
+            const hairGeo = new THREE.SphereGeometry(0.255, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.65);
+            const hairPos = hairGeo.attributes.position;
+            for(let i=0; i<hairPos.count; i++) {
+                let x = hairPos.getX(i);
+                let y = hairPos.getY(i);
+                let z = hairPos.getZ(i);
+                // Bulk out the back/top volume
+                if (y > 0) { y *= 1.05; }
+                hairPos.setXYZ(i, x, y, z);
+                baseHairVertices.push(new THREE.Vector3(x, y, z));
+            }
+            hairGeo.computeVertexNormals();
+            hairMesh = new THREE.Mesh(hairGeo, hairMaterial);
+            hairMesh.position.set(0, 0.04, -0.02);
+            hairMesh.rotation.x = -0.15;
+            hairMesh.name = "hair";
+            faceMesh.add(hairMesh);
 
-            // Top Shirt Layer
-            const topGeo = new THREE.CylinderGeometry(0.21, 0.19, 0.35, 16);
-            topMesh = new THREE.Mesh(topGeo, materials.top);
-            topMesh.position.y = 0.13;
-            bodyMesh.add(topMesh);
-
-            // Pants Layer
-            const bottomGeo = new THREE.CylinderGeometry(0.185, 0.155, 0.22, 16);
-            bottomMesh = new THREE.Mesh(bottomGeo, materials.bottom);
-            bottomMesh.position.y = -0.16;
-            bodyMesh.add(bottomMesh);
-
-            // Head Node Structure
-            const headGeo = new THREE.SphereGeometry(0.22, 32, 32);
-            headMesh = new THREE.Mesh(headGeo, materials.skin);
-            headMesh.position.y = 0.42; // Anchored relative to the torso
-            headMesh.castShadow = true;
-            bodyMesh.add(headMesh);
-
-            // Minimalist Illustrated Hair Volumetric Shape
-            const hairGeo = new THREE.SphereGeometry(0.23, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.6);
-            hairMesh = new THREE.Mesh(hairGeo, materials.hair);
-            hairMesh.position.set(0, 0.03, -0.01);
-            hairMesh.rotation.x = -0.2;
-            headMesh.add(hairMesh);
-
-            // Arm Left Component
-            const armGeo = new THREE.CylinderGeometry(0.05, 0.04, 0.35, 8);
-            leftArm = new THREE.Mesh(armGeo, materials.skin);
-            leftArm.position.set(-0.26, 0.1, 0);
-            leftArm.rotation.z = 0.15;
-            leftArm.castShadow = true;
-            bodyMesh.add(leftArm);
-
-            // Arm Right Component
-            rightArm = leftArm.clone();
-            rightArm.position.x = 0.26;
-            rightArm.rotation.z = -0.15;
-            bodyMesh.add(rightArm);
+            // 3. Anatomical Neck Base
+            const neckGeo = new THREE.CylinderGeometry(0.08, 0.1, 0.25, 16);
+            const neckPos = neckGeo.attributes.position;
+            for(let i=0; i<neckPos.count; i++) {
+                baseNeckVertices.push(new THREE.Vector3(neckPos.getX(i), neckPos.getY(i), neckPos.getZ(i)));
+            }
+            neckMesh = new THREE.Mesh(neckGeo, skinMaterial);
+            neckMesh.position.y = 0.16;
+            neckMesh.name = "neck";
+            scene.add(neckMesh);
         }
 
-        // Connect Interface Nodes to 3D Vertex Engine Matrix
-        function setupUIListeners() {
-            // Height Multiplier Setup
-            document.getElementById('scale-height').addEventListener('input', (e) => {
-                const val = parseFloat(e.target.value);
-                bodyMesh.scale.y = val;
-                // Reverse counteract head scaling to preserve standard head shape dimensions
-                headMesh.scale.y = 1 / val; 
-                leftArm.scale.y = 1 / val;
-                rightArm.scale.y = 1 / val;
-                document.getElementById('val-height').innerText = val.toFixed(2) + 'x';
+        // Raycasting Logic: Identifies clicked model part & builds a floating link UI
+        function onModelClick(event) {
+            // Disregard clicks hitting active panel menus
+            if(event.target.closest('.context-menu')) return;
+
+            const container = document.getElementById('canvas-container');
+            mouse.x = (event.clientX / container.clientWidth) * 2 - 1;
+            mouse.y = -(event.clientY / container.clientHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects([faceMesh, hairMesh, neckMesh], true);
+
+            if (intersects.length > 0) {
+                // Determine core object hit name
+                let targetObj = intersects[0].object;
+                if(targetObj.name === "") targetObj = targetObj.parent; // Catch children variations
+                
+                showFloatingMenu(targetObj.name, event.clientX, event.clientY);
+            } else {
+                hideActiveMenu();
+            }
+        }
+
+        function showFloatingMenu(partName, clickX, clickY) {
+            hideActiveMenu();
+
+            const menu = document.getElementById(`menu-${partName}`);
+            if (!menu) return;
+
+            // Offset the panel so it floats elegantly alongside the cursor context
+            menu.style.left = `${clickX + 25}px`;
+            menu.style.top = `${clickY - 50}px`;
+            menu.classList.add('active');
+            activeMenu = menu;
+        }
+
+        function hideActiveMenu() {
+            if (activeMenu) {
+                activeMenu.classList.remove('active');
+                activeMenu = null;
+            }
+        }
+
+        // Real-Time Parametric Morphing Scripts (Reshaping without distortions)
+        function setupMorphControls() {
+            // Face Morphing Logic
+            document.getElementById('morph-face-width').addEventListener('input', (e) => {
+                const amount = parseFloat(e.target.value);
+                document.getElementById('txt-face-width').innerText = Math.round(amount * 100) + '%';
+                
+                const pos = faceMesh.geometry.attributes.position;
+                for(let i=0; i<pos.count; i++) {
+                    let base = baseFaceVertices[i];
+                    // Stretch vertices outward horizontally based on the slider value
+                    pos.setX(i, base.x * (1 + amount));
+                }
+                pos.needsUpdate = true;
             });
 
-            // Lateral Width Slider Link
-            document.getElementById('scale-width').addEventListener('input', (e) => {
-                const val = parseFloat(e.target.value);
-                bodyMesh.scale.x = val;
-                bodyMesh.scale.z = val;
-                // Preserve proportional head scale ratios during torso transformations
-                headMesh.scale.x = 1 / val;
-                headMesh.scale.z = 1 / val;
-                document.getElementById('val-width').innerText = val.toFixed(2) + 'x';
+            document.getElementById('morph-chin-depth').addEventListener('input', (e) => {
+                const amount = parseFloat(e.target.value);
+                document.getElementById('txt-chin-depth').innerText = Math.round(amount * 100) + '%';
+                
+                const pos = faceMesh.geometry.attributes.position;
+                for(let i=0; i<pos.count; i++) {
+                    let base = baseFaceVertices[i];
+                    // Pull lower chin jaw vertices forward or backward dynamically
+                    if(base.y < 0) {
+                        pos.setZ(i, base.z + (amount * Math.abs(base.y)));
+                    }
+                }
+                pos.needsUpdate = true;
             });
 
-            // Independent Cranial Scaling Slider
-            document.getElementById('scale-head-size').addEventListener('input', (e) => {
-                const val = parseFloat(e.target.value);
-                headMesh.scale.set(val, (1 / bodyMesh.scale.y) * val, val);
-                document.getElementById('val-head').innerText = val.toFixed(2) + 'x';
+            // Hair Morphing Logic
+            document.getElementById('morph-hair-puff').addEventListener('input', (e) => {
+                const amount = parseFloat(e.target.value);
+                document.getElementById('txt-hair-puff').innerText = Math.round(amount * 100) + '%';
+                
+                const pos = hairMesh.geometry.attributes.position;
+                for(let i=0; i<pos.count; i++) {
+                    let base = baseHairVertices[i];
+                    pos.setX(i, base.x * (1 + amount));
+                    pos.setZ(i, base.z * (1 + amount));
+                }
+                pos.needsUpdate = true;
             });
 
-            // Color System Vector Updates
-            document.getElementById('color-skin').addEventListener('input', (e) => {
-                bodyMesh.material.color.set(e.target.value);
-                headMesh.material.color.set(e.target.value);
-                leftArm.material.color.set(e.target.value);
-                rightArm.material.color.set(e.target.value);
+            document.getElementById('morph-hair-height').addEventListener('input', (e) => {
+                const amount = parseFloat(e.target.value);
+                document.getElementById('txt-hair-height').innerText = Math.round(amount * 100) + '%';
+                
+                const pos = hairMesh.geometry.attributes.position;
+                for(let i=0; i<pos.count; i++) {
+                    let base = baseHairVertices[i];
+                    if(base.y > 0) {
+                        pos.setY(i, base.y * (1 + amount));
+                    }
+                }
+                pos.needsUpdate = true;
             });
 
-            document.getElementById('color-hair').addEventListener('input', (e) => {
-                hairMesh.material.color.set(e.target.value);
+            // Neck Morphing Logic
+            document.getElementById('morph-neck-thick').addEventListener('input', (e) => {
+                const amount = parseFloat(e.target.value);
+                document.getElementById('txt-neck-thick').innerText = Math.round(amount * 100) + '%';
+                
+                const pos = neckMesh.geometry.attributes.position;
+                for(let i=0; i<pos.count; i++) {
+                    let base = baseNeckVertices[i];
+                    pos.setX(i, base.x * (1 + amount * 5));
+                    pos.setZ(i, base.z * (1 + amount * 5));
+                }
+                pos.needsUpdate = true;
             });
 
-            document.getElementById('color-top').addEventListener('input', (e) => {
-                topMesh.material.color.set(e.target.value);
+            document.getElementById('morph-neck-height').addEventListener('input', (e) => {
+                const amount = parseFloat(e.target.value);
+                document.getElementById('txt-neck-height').innerText = Math.round(amount * 100) + '%';
+                
+                const pos = neckMesh.geometry.attributes.position;
+                for(let i=0; i<pos.count; i++) {
+                    let base = baseNeckVertices[i];
+                    pos.setY(i, base.y * (1 + amount));
+                }
+                pos.needsUpdate = true;
             });
+        }
 
-            document.getElementById('color-bottom').addEventListener('input', (e) => {
-                bottomMesh.material.color.set(e.target.value);
-            });
-
-            // Dynamic Window Adjustment Listener
-            window.addEventListener('resize', onWindowResize);
+        // Palette Hex Pipeline
+        window.changeColor = function(part, hexColor) {
+            if (part === 'face') {
+                faceMesh.material.color.set(hexColor);
+                neckMesh.material.color.set(hexColor);
+            } else if (part === 'hair') {
+                hairMesh.material.color.set(hexColor);
+            }
         }
 
         function onWindowResize() {
@@ -506,14 +497,12 @@
             renderer.setSize(container.clientWidth, container.clientHeight);
         }
 
-        // Core Render Execution Loop
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
             renderer.render(scene, camera);
         }
 
-        // Initialize on DOM load
         window.onload = init;
     </script>
 </body>
