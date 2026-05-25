@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pocketfolks - Character Creator</title>
-    
+    <title>Pocketfolks - Full Character Customizer</title>
     <style>
         :root {
             --bg-warm: #FAF8F5;
@@ -14,161 +13,32 @@
             --panel-shadow: 0 10px 30px rgba(51, 60, 49, 0.08);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            -webkit-user-select: none;
-            user-select: none;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-user-select: none; user-select: none; }
+        body { background-color: var(--bg-warm); overflow: hidden; width: 100vw; height: 100vh; color: var(--ui-dark); }
+        #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+        
+        #hud-header { position: absolute; top: 30px; left: 40px; z-index: 10; pointer-events: none; }
+        #hud-header h1 { font-size: 1.8rem; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 2px; }
+        #hud-header p { font-size: 0.85rem; color: var(--ui-sage-dark); font-weight: 500; }
 
-        body {
-            background-color: var(--bg-warm);
-            overflow: hidden;
-            width: 100vw;
-            height: 100vh;
-            color: var(--ui-dark);
-        }
-
-        #canvas-container {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-
-        /* Top HUD Title Bar */
-        #hud-header {
-            position: absolute;
-            top: 30px;
-            left: 40px;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        #hud-header h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-            margin-bottom: 2px;
-        }
-
-        #hud-header p {
-            font-size: 0.85rem;
-            color: var(--ui-sage-dark);
-            font-weight: 500;
-        }
-
-        /* Contextual Floating Pop-out Panels (Paralives Style) */
+        /* Floating Context Menus */
         .context-menu {
-            position: absolute;
-            z-index: 10;
-            background: rgba(241, 245, 238, 0.88);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(107, 124, 101, 0.15);
-            padding: 20px;
-            border-radius: 20px;
-            width: 260px;
-            box-shadow: var(--panel-shadow);
-            opacity: 0;
-            transform: scale(0.9) translateY(10px);
-            pointer-events: none;
-            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: absolute; z-index: 10; background: rgba(241, 245, 238, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(107, 124, 101, 0.15); padding: 20px; border-radius: 20px; width: 260px; box-shadow: var(--panel-shadow);
+            opacity: 0; transform: scale(0.9) translateY(10px); pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        .context-menu.active {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-            pointer-events: auto;
-        }
-
-        .menu-title {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--ui-sage-dark);
-            font-weight: 700;
-            margin-bottom: 15px;
-            border-bottom: 1px solid rgba(107, 124, 101, 0.1);
-            padding-bottom: 6px;
-        }
-
-        /* Sliders and Feature Pickers */
-        .feature-row {
-            margin-bottom: 14px;
-        }
-
-        .feature-row label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .slider {
-            width: 100%;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 4px;
-            border-radius: 2px;
-            background: rgba(107, 124, 101, 0.2);
-            outline: none;
-        }
-
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--ui-sage-dark);
-            cursor: pointer;
-        }
-
-        /* Color Circle Button Layout */
-        .color-palette-row {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .color-dot {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: transform 0.15s ease;
-        }
-
-        .color-dot:hover {
-            transform: scale(1.15);
-        }
-
-        /* Ambient Instruction Guide */
-        #guide-overlay {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            background: rgba(51, 60, 49, 0.05);
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            pointer-events: none;
-            color: var(--ui-sage-dark);
-            border: 1px solid rgba(107, 124, 101, 0.1);
-        }
+        .context-menu.active { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+        .menu-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--ui-sage-dark); font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid rgba(107, 124, 101, 0.1); padding-bottom: 6px; }
+        
+        .feature-row { margin-bottom: 14px; }
+        .feature-row label { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; }
+        .slider { width: 100%; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: rgba(107, 124, 101, 0.2); outline: none; }
+        .slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--ui-sage-dark); cursor: pointer; }
+        
+        .color-palette-row { display: flex; gap: 8px; margin-top: 10px; }
+        .color-dot { width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
+        #guide-overlay { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10; background: rgba(255, 255, 255, 0.8); padding: 10px 20px; border-radius: 30px; font-size: 0.8rem; font-weight: 500; pointer-events: none; color: var(--ui-sage-dark); border: 1px solid rgba(107, 124, 101, 0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
     </style>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
@@ -176,317 +46,289 @@
 
     <div id="hud-header">
         <h1>Pocketfolks</h1>
-        <p>Interactive Reshaping Engine</p>
+        <p>Full Character Customization Engine</p>
     </div>
 
     <div id="canvas-container"></div>
-
-    <div id="guide-overlay">✦ Click directly on the Hair, Face, or Neck to open reshaping controls</div>
+    <div id="guide-overlay">✦ Click on Hair, Face, Torso, or Legs to open floating menus</div>
 
     <div id="menu-face" class="context-menu">
-        <div class="menu-title">Face Matrix</div>
-        <div class="feature-row">
-            <label>Face Width <span id="txt-face-width">0%</span></label>
-            <input type="range" id="morph-face-width" class="slider" min="-0.3" max="0.3" step="0.01" value="0">
-        </div>
-        <div class="feature-row">
-            <label>Chin Depth <span id="txt-chin-depth">0%</span></label>
-            <input type="range" id="morph-chin-depth" class="slider" min="-0.2" max="0.3" step="0.01" value="0">
-        </div>
-        <div class="feature-row">
-            <label>Skin Tone</label>
-            <div class="color-palette-row">
-                <div class="color-dot" style="background: #E2B997;" onclick="changeColor('face', '#E2B997')"></div>
-                <div class="color-dot" style="background: #F3D2B9;" onclick="changeColor('face', '#F3D2B9')"></div>
-                <div class="color-dot" style="background: #C6936E;" onclick="changeColor('face', '#C6936E')"></div>
-                <div class="color-dot" style="background: #8A5A36;" onclick="changeColor('face', '#8A5A36')"></div>
-            </div>
-        </div>
+        <div class="menu-title">Face Profile</div>
+        <div class="feature-row"><label>Face Width <span id="txt-face-width">0%</span></label><input type="range" id="morph-face-width" class="slider" min="-0.2" max="0.3" step="0.01" value="0"></div>
+        <div class="feature-row"><label>Skin Tone</label><div class="color-palette-row"><div class="color-dot" style="background: #E2B997;" onclick="changeColor('skin', '#E2B997')"></div><div class="color-dot" style="background: #F3D2B9;" onclick="changeColor('skin', '#F3D2B9')"></div><div class="color-dot" style="background: #C6936E;" onclick="changeColor('skin', '#C6936E')"></div></div></div>
     </div>
 
     <div id="menu-hair" class="context-menu">
-        <div class="menu-title">Hair Volume</div>
-        <div class="feature-row">
-            <label>Hair Puff <span id="txt-hair-puff">0%</span></label>
-            <input type="range" id="morph-hair-puff" class="slider" min="-0.1" max="0.4" step="0.01" value="0">
-        </div>
-        <div class="feature-row">
-            <label>Hair Height <span id="txt-hair-height">0%</span></label>
-            <input type="range" id="morph-hair-height" class="slider" min="-0.1" max="0.3" step="0.01" value="0">
-        </div>
-        <div class="feature-row">
-            <label>Hair Swatch</label>
-            <div class="color-palette-row">
-                <div class="color-dot" style="background: #4A3728;" onclick="changeColor('hair', '#4A3728')"></div>
-                <div class="color-dot" style="background: #222222;" onclick="changeColor('hair', '#222222')"></div>
-                <div class="color-dot" style="background: #C49A6C;" onclick="changeColor('hair', '#C49A6C')"></div>
-                <div class="color-dot" style="background: #9E4F3F;" onclick="changeColor('hair', '#9E4F3F')"></div>
-            </div>
-        </div>
+        <div class="menu-title">Hair Style</div>
+        <div class="feature-row"><label>Volume <span id="txt-hair-puff">0%</span></label><input type="range" id="morph-hair-puff" class="slider" min="-0.1" max="0.3" step="0.01" value="0"></div>
+        <div class="feature-row"><label>Hair Color</label><div class="color-palette-row"><div class="color-dot" style="background: #4A3728;" onclick="changeColor('hair', '#4A3728')"></div><div class="color-dot" style="background: #C49A6C;" onclick="changeColor('hair', '#C49A6C')"></div><div class="color-dot" style="background: #222222;" onclick="changeColor('hair', '#222222')"></div></div></div>
     </div>
 
-    <div id="menu-neck" class="context-menu">
-        <div class="menu-title">Proportions</div>
-        <div class="feature-row">
-            <label>Neck Thickness <span id="txt-neck-thick">0%</span></label>
-            <input type="range" id="morph-neck-thick" class="slider" min="-0.05" max="0.1" step="0.01" value="0">
-        </div>
-        <div class="feature-row">
-            <label>Neck Height <span id="txt-neck-height">0%</span></label>
-            <input type="range" id="morph-neck-height" class="slider" min="-0.1" max="0.2" step="0.01" value="0">
-        </div>
+    <div id="menu-torso" class="context-menu">
+        <div class="menu-title">Upper Body</div>
+        <div class="feature-row"><label>Chest Width <span id="txt-chest-width">0%</span></label><input type="range" id="morph-chest-width" class="slider" min="-0.15" max="0.3" step="0.01" value="0"></div>
+        <div class="feature-row"><label>Top Color</label><div class="color-palette-row"><div class="color-dot" style="background: #FAF8F5;" onclick="changeColor('top', '#FAF8F5')"></div><div class="color-dot" style="background: #EAE3D2;" onclick="changeColor('top', '#EAE3D2')"></div><div class="color-dot" style="background: #9BB0A5;" onclick="changeColor('top', '#9BB0A5')"></div></div></div>
+    </div>
+
+    <div id="menu-legs" class="context-menu">
+        <div class="menu-title">Lower Body</div>
+        <div class="feature-row"><label>Leg Length <span id="txt-leg-length">0%</span></label><input type="range" id="morph-leg-length" class="slider" min="-0.1" max="0.3" step="0.01" value="0"></div>
+        <div class="feature-row"><label>Bottom Color</label><div class="color-palette-row"><div class="color-dot" style="background: #F1F5EE;" onclick="changeColor('bottom', '#F1F5EE')"></div><div class="color-dot" style="background: #7C8B75;" onclick="changeColor('bottom', '#7C8B75')"></div><div class="color-dot" style="background: #3E4A3A;" onclick="changeColor('bottom', '#3E4A3A')"></div></div></div>
     </div>
 
     <script>
         let scene, camera, renderer, controls, raycaster, mouse;
-        let faceMesh, hairMesh, neckMesh;
+        let characterGroup, faceMesh, hairMesh, neckMesh, torsoMesh, leftArm, rightArm, leftLeg, rightLeg;
         let activeMenu = null;
-
-        // Arrays to preserve original vertex structures for dynamic morphing
-        let baseFaceVertices = [], baseHairVertices = [], baseNeckVertices = [];
+        let baseFaceVertices = [], baseTorsoVertices = [], baseLegVertices = [];
 
         function init() {
             const container = document.getElementById('canvas-container');
-
             scene = new THREE.Scene();
             scene.background = new THREE.Color('#FAF8F5');
 
-            camera = new THREE.PerspectiveCamera(30, container.clientWidth / container.clientHeight, 0.1, 100);
-            camera.position.set(0, 0.4, 3);
+            camera = new THREE.PerspectiveCamera(35, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(0, 0.9, 2.6);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
 
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
-            controls.target.set(0, 0.35, 0);
+            controls.target.set(0, 0.7, 0);
             controls.enablePan = false;
 
             raycaster = new THREE.Raycaster();
             mouse = new THREE.Vector2();
 
-            // Set up sophisticated, ambient lighting (Soft PBR style)
-            const ambientLight = new THREE.AmbientLight('#ffffff', 0.7);
+            // Soothing, painterly lighting profiles (Matte PBR Setup)
+            const ambientLight = new THREE.AmbientLight('#ffffff', 0.75);
             scene.add(ambientLight);
 
-            const studioLight = new THREE.DirectionalLight('#FFF5EB', 0.65);
-            studioLight.position.set(4, 6, 4);
-            scene.add(studioLight);
+            const mainLight = new THREE.DirectionalLight('#FFF7ED', 0.55);
+            mainLight.position.set(3, 5, 3);
+            mainLight.castShadow = true;
+            scene.add(mainLight);
 
-            const softFill = new THREE.DirectionalLight('#E2E8F0', 0.35);
-            softFill.position.set(-4, 2, -4);
+            const softFill = new THREE.DirectionalLight('#E0E7FF', 0.3);
+            softFill.position.set(-3, 2, -3);
             scene.add(softFill);
 
-            // Build human-like mesh structures
-            buildPocketfolkModels();
+            // Floor Shadow Receiver
+            const floorGeo = new THREE.PlaneGeometry(5, 5);
+            const floorMat = new THREE.ShadowMaterial({ opacity: 0.05 });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
 
-            // Event Hooks
+            buildProceduralHuman();
+
             container.addEventListener('pointerdown', onModelClick);
             window.addEventListener('resize', onWindowResize);
-            setupMorphControls();
+            setupMorphLogic();
 
             animate();
         }
 
-        function buildPocketfolkModels() {
-            // Setup true matte materials matching your palette preference
-            const skinMaterial = new THREE.MeshLambertMaterial({ color: 0xE2B997, roughness: 0.9 });
-            const hairMaterial = new THREE.MeshLambertMaterial({ color: 0x4A3728, roughness: 0.85 });
+        function buildProceduralHuman() {
+            characterGroup = new THREE.Group();
+            scene.add(characterGroup);
 
-            // 1. Procedural Human-Style Head Mesh (Softer than basic shapes)
-            const faceGeo = new THREE.SphereGeometry(0.24, 32, 24);
-            // Sculpt the sphere into an organic jaw/face shape instantly via code
-            const posAttr = faceGeo.attributes.position;
-            for (let i = 0; i < posAttr.count; i++) {
-                let x = posAttr.getX(i);
-                let y = posAttr.getY(i);
-                let z = posAttr.getZ(i);
-                
-                // Taper the chin slightly downward/forward
-                if (y < 0) {
-                    x *= (1 + y * 0.3);
-                    z *= (1 + y * 0.1);
-                }
-                posAttr.setXYZ(i, x, y, z);
+            // Materials configured for zero harsh glossiness
+            const matSkin = new THREE.MeshLambertMaterial({ color: 0xE2B997 });
+            const matHair = new THREE.MeshLambertMaterial({ color: 0x4A3728 });
+            const matTop = new THREE.MeshLambertMaterial({ color: 0xFAF8F5 });
+            const matBottom = new THREE.MeshLambertMaterial({ color: 0xF1F5EE });
+
+            // 1. Torso Assembly (Chest, Shoulders & Waist)
+            const torsoGeo = new THREE.CylinderGeometry(0.16, 0.11, 0.45, 16);
+            const tPos = torsoGeo.attributes.position;
+            for(let i=0; i<tPos.count; i++) {
+                let x = tPos.getX(i), y = tPos.getY(i), z = tPos.getZ(i);
+                // Flatten the cylinder slightly to match a real human chest profile depth
+                z *= 0.75;
+                tPos.setXYZ(i, x, y, z);
+                baseTorsoVertices.push(new THREE.Vector3(x, y, z));
+            }
+            torsoGeo.computeVertexNormals();
+            torsoMesh = new THREE.Mesh(torsoGeo, matTop);
+            torsoMesh.position.y = 0.75;
+            torsoMesh.name = "torso";
+            torsoMesh.castShadow = true;
+            characterGroup.add(torsoMesh);
+
+            // 2. Head with Sculpted Chin
+            const faceGeo = new THREE.SphereGeometry(0.16, 32, 24);
+            const fPos = faceGeo.attributes.position;
+            for(let i=0; i<fPos.count; i++) {
+                let x = fPos.getX(i), y = fPos.getY(i), z = fPos.getZ(i);
+                if(y < 0) { x *= (1 + y*0.2); z *= (1 + y*0.1); } // Taper jawline
+                fPos.setXYZ(i, x, y, z);
                 baseFaceVertices.push(new THREE.Vector3(x, y, z));
             }
             faceGeo.computeVertexNormals();
-            faceMesh = new THREE.Mesh(faceGeo, skinMaterial);
-            faceMesh.position.y = 0.4;
+            faceMesh = new THREE.Mesh(faceGeo, matSkin);
+            faceMesh.position.y = 0.36;
             faceMesh.name = "face";
-            scene.add(faceMesh);
+            faceMesh.castShadow = true;
+            torsoMesh.add(faceMesh);
 
-            // 2. Volumetric Soft Hair Layer
-            const hairGeo = new THREE.SphereGeometry(0.255, 24, 20, 0, Math.PI * 2, 0, Math.PI * 0.65);
-            const hairPos = hairGeo.attributes.position;
-            for(let i=0; i<hairPos.count; i++) {
-                let x = hairPos.getX(i);
-                let y = hairPos.getY(i);
-                let z = hairPos.getZ(i);
-                // Bulk out the back/top volume
-                if (y > 0) { y *= 1.05; }
-                hairPos.setXYZ(i, x, y, z);
-                baseHairVertices.push(new THREE.Vector3(x, y, z));
-            }
-            hairGeo.computeVertexNormals();
-            hairMesh = new THREE.Mesh(hairGeo, hairMaterial);
-            hairMesh.position.set(0, 0.04, -0.02);
-            hairMesh.rotation.x = -0.15;
+            // 3. Volumetric Hair Cap
+            const hairGeo = new THREE.SphereGeometry(0.17, 24, 18, 0, Math.PI*2, 0, Math.PI*0.6);
+            hairMesh = new THREE.Mesh(hairGeo, matHair);
+            hairMesh.position.set(0, 0.02, -0.01);
+            hairMesh.rotation.x = -0.1;
             hairMesh.name = "hair";
             faceMesh.add(hairMesh);
 
-            // 3. Anatomical Neck Base
-            const neckGeo = new THREE.CylinderGeometry(0.08, 0.1, 0.25, 16);
-            const neckPos = neckGeo.attributes.position;
-            for(let i=0; i<neckPos.count; i++) {
-                baseNeckVertices.push(new THREE.Vector3(neckPos.getX(i), neckPos.getY(i), neckPos.getZ(i)));
+            // 4. Anatomical Neck Link
+            neckMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.055, 0.1, 12), matSkin);
+            neckMesh.position.y = -0.23;
+            faceMesh.add(neckMesh);
+
+            // 5. Left & Right Arm Structures
+            const armGeo = new THREE.CylinderGeometry(0.04, 0.035, 0.35, 12);
+            leftArm = new THREE.Mesh(armGeo, matSkin);
+            leftArm.position.set(-0.21, 0.1, 0);
+            leftArm.rotation.z = 0.1;
+            leftArm.castShadow = true;
+            torsoMesh.add(leftArm);
+
+            rightArm = leftArm.clone();
+            rightArm.position.x = 0.21;
+            rightArm.rotation.z = -0.1;
+            torsoMesh.add(rightArm);
+
+            // Sleeves
+            const sleeveGeo = new THREE.CylinderGeometry(0.046, 0.044, 0.12, 12);
+            let leftSleeve = new THREE.Mesh(sleeveGeo, matTop); leftSleeve.position.y = 0.12; leftArm.add(leftSleeve);
+            let rightSleeve = new THREE.Mesh(sleeveGeo, matTop); rightSleeve.position.y = 0.12; rightArm.add(rightSleeve);
+
+            // 6. Left & Right Leg Segments
+            const legGeo = new THREE.CylinderGeometry(0.05, 0.04, 0.45, 12);
+            const lPos = legGeo.attributes.position;
+            for(let i=0; i<lPos.count; i++) {
+                baseLegVertices.push(new THREE.Vector3(lPos.getX(i), lPos.getY(i), lPos.getZ(i)));
             }
-            neckMesh = new THREE.Mesh(neckGeo, skinMaterial);
-            neckMesh.position.y = 0.16;
-            neckMesh.name = "neck";
-            scene.add(neckMesh);
+            leftLeg = new THREE.Mesh(legGeo, matBottom);
+            leftLeg.position.set(-0.07, -0.4, 0);
+            leftLeg.castShadow = true;
+            torsoMesh.add(leftLeg);
+
+            rightLeg = leftLeg.clone();
+            rightLeg.position.x = 0.07;
+            torsoMesh.add(rightLeg);
+
+            // Small Shoes
+            const shoeGeo = new THREE.BoxGeometry(0.06, 0.05, 0.1);
+            let leftShoe = new THREE.Mesh(shoeGeo, matSkin); leftShoe.position.set(0, -0.23, 0.02); leftLeg.add(leftShoe);
+            let rightShoe = new THREE.Mesh(shoeGeo, matSkin); rightShoe.position.set(0, -0.23, 0.02); rightLeg.add(rightShoe);
         }
 
-        // Raycasting Logic: Identifies clicked model part & builds a floating link UI
+        // Raycast Object Identifier Node
         function onModelClick(event) {
-            // Disregard clicks hitting active panel menus
             if(event.target.closest('.context-menu')) return;
-
             const container = document.getElementById('canvas-container');
             mouse.x = (event.clientX / container.clientWidth) * 2 - 1;
             mouse.y = -(event.clientY / container.clientHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects([faceMesh, hairMesh, neckMesh], true);
+            const intersects = raycaster.intersectObjects(characterGroup.children, true);
 
             if (intersects.length > 0) {
-                // Determine core object hit name
-                let targetObj = intersects[0].object;
-                if(targetObj.name === "") targetObj = targetObj.parent; // Catch children variations
-                
-                showFloatingMenu(targetObj.name, event.clientX, event.clientY);
+                let hitObj = intersects[0].object;
+                while (hitObj.parent && !['face','hair','torso','legs'].includes(hitObj.name)) {
+                    if (hitObj.parent.name === "torso" && hitObj !== leftArm && hitObj !== rightArm) {
+                        hitObj.name = "torso";
+                        break;
+                    }
+                    if (hitObj === leftLeg || hitObj === rightLeg || hitObj.parent === leftLeg || hitObj.parent === rightLeg) {
+                        hitObj.name = "legs";
+                        break;
+                    }
+                    hitObj = hitObj.parent;
+                }
+                if(['face','hair','torso','legs'].includes(hitObj.name)) {
+                    showFloatingMenu(hitObj.name, event.clientX, event.clientY);
+                }
             } else {
                 hideActiveMenu();
             }
         }
 
-        function showFloatingMenu(partName, clickX, clickY) {
+        function showFloatingMenu(name, x, y) {
             hideActiveMenu();
-
-            const menu = document.getElementById(`menu-${partName}`);
-            if (!menu) return;
-
-            // Offset the panel so it floats elegantly alongside the cursor context
-            menu.style.left = `${clickX + 25}px`;
-            menu.style.top = `${clickY - 50}px`;
+            const menu = document.getElementById(`menu-${name}`);
+            if(!menu) return;
+            menu.style.left = `${Math.min(x + 20, window.innerWidth - 280)}px`;
+            menu.style.top = `${Math.min(y - 40, window.innerHeight - 220)}px`;
             menu.classList.add('active');
             activeMenu = menu;
         }
 
-        function hideActiveMenu() {
-            if (activeMenu) {
-                activeMenu.classList.remove('active');
-                activeMenu = null;
-            }
-        }
+        function hideActiveMenu() { if(activeMenu) { activeMenu.classList.remove('active'); activeMenu = null; } }
 
-        // Real-Time Parametric Morphing Scripts (Reshaping without distortions)
-        function setupMorphControls() {
-            // Face Morphing Logic
+        // Procedural Morph Vector Pipelines
+        function setupMorphLogic() {
             document.getElementById('morph-face-width').addEventListener('input', (e) => {
-                const amount = parseFloat(e.target.value);
-                document.getElementById('txt-face-width').innerText = Math.round(amount * 100) + '%';
-                
+                const val = parseFloat(e.target.value);
+                document.getElementById('txt-face-width').innerText = Math.round(val*100) + '%';
                 const pos = faceMesh.geometry.attributes.position;
-                for(let i=0; i<pos.count; i++) {
-                    let base = baseFaceVertices[i];
-                    // Stretch vertices outward horizontally based on the slider value
-                    pos.setX(i, base.x * (1 + amount));
-                }
+                for(let i=0; i<pos.count; i++) { pos.setX(i, baseFaceVertices[i].x * (1 + val)); }
                 pos.needsUpdate = true;
             });
 
-            document.getElementById('morph-chin-depth').addEventListener('input', (e) => {
-                const amount = parseFloat(e.target.value);
-                document.getElementById('txt-chin-depth').innerText = Math.round(amount * 100) + '%';
-                
-                const pos = faceMesh.geometry.attributes.position;
-                for(let i=0; i<pos.count; i++) {
-                    let base = baseFaceVertices[i];
-                    // Pull lower chin jaw vertices forward or backward dynamically
-                    if(base.y < 0) {
-                        pos.setZ(i, base.z + (amount * Math.abs(base.y)));
-                    }
-                }
-                pos.needsUpdate = true;
-            });
-
-            // Hair Morphing Logic
             document.getElementById('morph-hair-puff').addEventListener('input', (e) => {
-                const amount = parseFloat(e.target.value);
-                document.getElementById('txt-hair-puff').innerText = Math.round(amount * 100) + '%';
-                
-                const pos = hairMesh.geometry.attributes.position;
-                for(let i=0; i<pos.count; i++) {
-                    let base = baseHairVertices[i];
-                    pos.setX(i, base.x * (1 + amount));
-                    pos.setZ(i, base.z * (1 + amount));
-                }
-                pos.needsUpdate = true;
+                const val = parseFloat(e.target.value);
+                document.getElementById('txt-hair-puff').innerText = Math.round(val*100) + '%';
+                hairMesh.scale.set(1 + val, 1 + val, 1 + val);
             });
 
-            document.getElementById('morph-hair-height').addEventListener('input', (e) => {
-                const amount = parseFloat(e.target.value);
-                document.getElementById('txt-hair-height').innerText = Math.round(amount * 100) + '%';
-                
-                const pos = hairMesh.geometry.attributes.position;
-                for(let i=0; i<pos.count; i++) {
-                    let base = baseHairVertices[i];
-                    if(base.y > 0) {
-                        pos.setY(i, base.y * (1 + amount));
-                    }
-                }
+            document.getElementById('morph-chest-width').addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                document.getElementById('txt-chest-width').innerText = Math.round(val*100) + '%';
+                const pos = torsoMesh.geometry.attributes.position;
+                for(let i=0; i<pos.count; i++) { pos.setX(i, baseTorsoVertices[i].x * (1 + val)); }
                 pos.needsUpdate = true;
+                leftArm.position.x = -0.21 - (val * 0.15);
+                rightArm.position.x = 0.21 + (val * 0.15);
             });
 
-            // Neck Morphing Logic
-            document.getElementById('morph-neck-thick').addEventListener('input', (e) => {
-                const amount = parseFloat(e.target.value);
-                document.getElementById('txt-neck-thick').innerText = Math.round(amount * 100) + '%';
-                
-                const pos = neckMesh.geometry.attributes.position;
-                for(let i=0; i<pos.count; i++) {
-                    let base = baseNeckVertices[i];
-                    pos.setX(i, base.x * (1 + amount * 5));
-                    pos.setZ(i, base.z * (1 + amount * 5));
-                }
-                pos.needsUpdate = true;
-            });
-
-            document.getElementById('morph-neck-height').addEventListener('input', (e) => {
-                const amount = parseFloat(e.target.value);
-                document.getElementById('txt-neck-height').innerText = Math.round(amount * 100) + '%';
-                
-                const pos = neckMesh.geometry.attributes.position;
-                for(let i=0; i<pos.count; i++) {
-                    let base = baseNeckVertices[i];
-                    pos.setY(i, base.y * (1 + amount));
-                }
-                pos.needsUpdate = true;
+            document.getElementById('morph-leg-length').addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                document.getElementById('txt-leg-length').innerText = Math.round(val*100) + '%';
+                leftLeg.scale.y = 1 + val;
+                rightLeg.scale.y = 1 + val;
+                leftLeg.position.y = -0.4 - (val * 0.22);
+                rightLeg.position.y = -0.4 - (val * 0.22);
             });
         }
 
-        // Palette Hex Pipeline
-        window.changeColor = function(part, hexColor) {
-            if (part === 'face') {
-                faceMesh.material.color.set(hexColor);
-                neckMesh.material.color.set(hexColor);
-            } else if (part === 'hair') {
-                hairMesh.material.color.set(hexColor);
+        window.changeColor = function(type, hex) {
+            const hexNum = parseInt(hex.replace('#', '0x'));
+            if(type === 'skin') {
+                faceMesh.material.color.setHex(hexNum);
+                neckMesh.material.color.setHex(hexNum);
+                leftArm.material.color.setHex(hexNum);
+                rightArm.material.color.setHex(hexNum);
+                leftLeg.children[0].material.color.setHex(hexNum);
+                rightLeg.children[0].material.color.setHex(hexNum);
+            }
+            if(type === 'hair') hairMesh.material.color.setHex(hexNum);
+            if(type === 'top') {
+                torsoMesh.material.color.setHex(hexNum);
+                leftArm.children[0].material.color.setHex(hexNum);
+                rightArm.children[0].material.color.setHex(hexNum);
+            }
+            if(type === 'bottom') {
+                leftLeg.material.color.setHex(hexNum);
+                rightLeg.material.color.setHex(hexNum);
             }
         }
 
@@ -497,12 +339,7 @@
             renderer.setSize(container.clientWidth, container.clientHeight);
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
+        function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
         window.onload = init;
     </script>
 </body>
